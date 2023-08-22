@@ -10,7 +10,15 @@ from matplotlib.animation import FuncAnimation
 import numpy as np
 import time
 import serial
+import numpy as np
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
 fig, ax = plt.subplots()
+i = int(0)
+data = []
+
 def salvar_txt():
     with open('C:/Users/ccifusp/Desktop/Teste da galera/dadosdolab.txt', 'w') as arquivo:  #vai salvar no arquivo txt  
             j = 0
@@ -19,7 +27,60 @@ def salvar_txt():
             for ang,volt in zip(dados[0], dados[1]): #Ler os angulos e voltagens para salvar no arquivo
                 arquivo.write(f'{ang}\n')#Linha par com angulo e linha impar com voltagem
                 arquivo.write(f'{volt}\n')
+
+
+def iniciar_experimento():
+    ##Aqui nós pegamos os dados que estão vindo do Arduíno
+
+    ser = serial.Serial('COM5', 9600)  # conecta
+    time.sleep(2)
+
+    val = True
+    angulo = []
+    voltagem = []
+    i = int(0)
+    while val == True:
+        b = ser.readline()
+
+        string_n = b.decode()
+        string = string_n.rstrip()
+        flt = float(string)
+        data.append(flt)
+        print("Variável data")
+        print(data)
+
+
+        ##Aqui queremos separar as variáveis angulo e voltagem que vem do arduíno
+        if i % 2 == 1:
+            voltagem.append(data[i])
+        else:
+            angulo.append(data[i])
+        print(angulo)
+        print(voltagem)
+
+        # aqui queremos mandar os dados de voltagem e ângulo para fazer o gráfico em tempo real
+        if (i % 2) == 1 and i != 0:
+            ax.plot(angulo, voltagem)
+
+        ##saindo do loop em que pegamos os dados do arduíno
+        if (i == 20):
+            val = False
+        i = i + 1
+    ser.close()
+    print("voltagem e ângulos")
+    print(angulo)
+    print(voltagem)
+    #ax.clear()
+    #ax.plot(angulo, voltagem)
+    #ani = animation.FuncAnimation(fig, animar, interval = 100)
+
+def animar(i):
+    ax.clear()
+
+
+
 def mostrardados():
+
     ser = serial.Serial('COM5', 9600)#conecta
     time.sleep(2)
     data =[]                       
@@ -30,6 +91,7 @@ def mostrardados():
         flt = float(string) 
         data.append(flt)  
     ser.close()
+
     j = 2
     angulo_nova = []
     voltagem_novo = [] 
@@ -39,6 +101,9 @@ def mostrardados():
             voltagem_novo.append(dado)
         else:
             angulo_nova.append(dado)
+
+    print('Angulos e voltagens: ' + angulo_nova + voltagem_novo)
+
     while TRUE:
         j = 0 
         f = 0
@@ -65,6 +130,9 @@ def mostrardados():
             break
         
     return angulo_nova, voltagem_novo  
+
+
+
 def gerarpdf():
     j= 0
     #Fazendo um PDF para a imagem
@@ -101,32 +169,13 @@ def gerarpdf():
     merger.write('C:/Users/ccifusp/Desktop/Teste da galera/dadosLABFINAL.pdf')
     print("Table in PDF created successfully")
   
-def grafico_dinamico():
-    ani = animation.FuncAnimation(fig, animar, interval = 1000)
-    plt.show()
-def animar(i):
-    #Pegando os dados de um arquivo txt
-    ser = serial.Serial('COM5', 9600)#conecta
-    ang_test=[]
-    volt_test=[]                       
-    for i in range(10): 
-        i = i+1
-        b = ser.readline()         
-        string_n = b.decode()   
-        string = string_n.rstrip() 
-        flt = float(string)        
-        if i%2 ==0:
-            volt_test.append(flt)
-            print(volt_test)
-        else:
-            ang_test.append(flt)
-            print(ang_test)
-        if len(ang_test)== len(volt_test):
-            ax.clear()
-            ax.scatter(ang_test, volt_test)
-            ani = animation.FuncAnimation(fig, animar, interval = 1000)
-    
-    ser.close()
+def grafico_dinamico(angulo,voltagem):
+
+    return
+
+
+
+
     
     
             
@@ -143,4 +192,8 @@ botao = Button(janela, text = 'Salvar dados' , font = 'Arial 15', command = salv
 botao.grid(column = 0, row = 12,padx=20 , pady=0)
 botao = Button(janela, text = 'Mostrar dados' , font = 'Arial 15', command = mostrardados)
 botao.grid(column = 0, row = 13,padx=20 , pady=0)
+
+botao = Button(janela, text = 'Iniciar experimento' , font = 'Arial 15', command = iniciar_experimento)
+botao.grid(column = 0, row = 13,padx=20 , pady=0)
+
 janela.mainloop()
