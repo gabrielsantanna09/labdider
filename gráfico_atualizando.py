@@ -17,13 +17,14 @@ def animate(i):
     y = np.sin(2 * np.pi * (x - 0.01 * i))
     line.set_data(x, y)
     x_fiora = x
+    print(i)
     return line,
 
 
-anim = FuncAnimation(fig, animate, init_func=init,
-                     frames=200, interval=20, blit=True)
+anim = FuncAnimation(fig, animate, init_func=init, frames=50,
+                      interval=200, blit=True)
 
-print(x_fiora)
+
 plt.show()
 
 #anim.save('continuousSineWave.mp4',
