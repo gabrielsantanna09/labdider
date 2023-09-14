@@ -14,10 +14,17 @@ import numpy as np
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
+                                               NavigationToolbar2Tk)
 
+janela1 = Tk()
 fig, ax = plt.subplots()
-i = int(0)
+angulo = []
+voltagem = []
 data = []
+w = True
+
 
 def salvar_txt():
     with open('C:/Users/ccifusp/Desktop/Teste da galera/dadosdolab.txt', 'w') as arquivo:  #vai salvar no arquivo txt  
@@ -29,54 +36,116 @@ def salvar_txt():
                 arquivo.write(f'{volt}\n')
 
 
+def Parar_Experimento(event):
+    #aqui queremos abrir uma nova janela
+    print("Hellor world")
+    global w
+    global angulo
+    global voltagem
+    w = False
+    plt.close()
+
+    #Isso aqui é pra deixar o ângulo e a voltagem como arrays de mesmo tamanho
+    #se forem de tamanhos diferentes da erro no plot
+    if (len(angulo) > len(voltagem)):
+        #aqui eu apago o último espaço do array angulo
+        angulo.pop(-1)
+
+    fig2, ax2 = plt.subplots()
+    print(angulo,voltagem)
+    ax2.scatter(angulo,voltagem)
+    ax.set_autoscale_on(True)
+
+    #Janela 2 aparece depois de parar o experimento
+    #A ideia aqui é botar os botões para salvar o gráfico gerado, salvar arquivo txt, arquivo csv, e reiniciar experimento
+    #Ter um botão para cada função dessa, sendo que o botão reiniciar vai simplesmente zerar as variáveis e chamar a janela 1
+    janela2 = Tk()
+    janela2.geometry("700x400")
+    janela2.title('LABDIDER')
+    texto = Label(janela2, text='Seja Bem-vindo ao Software Labdider', font="Times 30")
+    texto.pack(padx=20, pady=0)
+    botao = Button(janela2, text='Iniciar experimento', font='Arial 15', command=iniciar_experimento)
+    botao.pack(padx=20, pady=0)
+    canvas = FigureCanvasTkAgg(fig2, master=janela2)
+    canvas.draw()
+    canvas.get_tk_widget().pack()
+    janela2.mainloop()
+
+
 def iniciar_experimento():
-    ##Aqui nós pegamos os dados que estão vindo do Arduíno
+    janela1.destroy()
 
-    ser = serial.Serial('COM5', 9600)  # conecta
-    time.sleep(2)
+    #o esse import precisa ficar dentro da função porque da conflito com o import do tkinter
+    #certamente deve haver um jeito melhor de resolver isso mas por hora fica assim
+    from matplotlib.widgets import Button
+    global angulo
+    global voltagem
 
-    val = True
+    #Varíaveis na função
+    leitura = []
+    ser = serial.Serial('COM5', 9600)  # abre porta serial COM6
     angulo = []
     voltagem = []
+    contador = 0
+    dados = []
     i = int(0)
-    while val == True:
-        b = ser.readline()
+    global w
+    w = True
 
+    #iniciando o loop que vai coletar os dados do arduíno
+    while w == True:
+        print(w)
+        while (ser.inWaiting() == 0):
+            pass
+        b = ser.readline()
         string_n = b.decode()
         string = string_n.rstrip()
         flt = float(string)
-        data.append(flt)
-        print("Variável data")
-        print(data)
-
-
-        ##Aqui queremos separar as variáveis angulo e voltagem que vem do arduíno
-        if i % 2 == 1:
-            voltagem.append(data[i])
+        dados.append(flt)
+        if contador % 2 == 1:
+            voltagem.append(dados[contador])
         else:
-            angulo.append(data[i])
-        print(angulo)
-        print(voltagem)
+            #aqui eu somo 180 quando o ângulo chega no zero
+            #isso acontece quando a maquininha começa a girar de volta
+            #isso aqui é bom porque deixa o gráfico senoidal sem se sobrepor
+            j = dados[contador] + (i * 180)
+            angulo.append(j)
+            if contador >= 4:
+                print(int(angulo[-1]))
+                if (int(angulo[-1]) == i * 180):
+                    i = i + 1
+                    angulo[-1] = i*180
 
-        # aqui queremos mandar os dados de voltagem e ângulo para fazer o gráfico em tempo real
-        if (i % 2) == 1 and i != 0:
-            ax.plot(angulo, voltagem)
 
-        ##saindo do loop em que pegamos os dados do arduíno
-        if (i == 20):
-            val = False
-        i = i + 1
+        #Aqui é onde eu monto o gráfico, colocando titulo, nomes dos eixos, etc
+        ax.set_autoscale_on(True)
+        ax.set_title('título')
+        plt.subplots_adjust(bottom=0.2)
+
+        #Botão, de ínicio apenas 1
+        #O botão parar vai nos mandar para uma função em que abriremos uma janela e perguntaremos se o usuário gostaria de salvar os dados ou refazer os experimento
+        ax_parar = plt.axes([0.58,0.05,0.15,0.07])
+        botao_parar = Button(ax_parar,'Parar')
+        botao_parar.on_clicked(Parar_Experimento)
+
+        #daqui pra baixo nós estamos fazendo o gráfico atualizar
+        leitura.append(dados)
+
+        #isso aqui faz o gráfico que está na janela atualizar
+        #precisamos descobrir um jeito de ter só um gráfico em tela
+        if contador % 2 == 1:
+            ax.clear()
+            ax.scatter(angulo, voltagem, color='red')
+            #aqui nós ainda temos que somar os ângulos depois de 180
+            #Temos também que dar clear nos subplot ax porque conforme os dados forem ficando maiores o gráfico vai ficando muito pesado
+
+        #O plt.pause é oq faz o gráfico atualizar na mesma figura
+        plt.pause(0.1)
+        contador = contador + 1
+
+        #isso vou manter por enquanto
+        print(angulo, voltagem)
     ser.close()
-    print("voltagem e ângulos")
-    print(angulo)
-    print(voltagem)
-    #ax.clear()
-    #ax.plot(angulo, voltagem)
-    #ani = animation.FuncAnimation(fig, animar, interval = 100)
-
-def animar(i):
-    ax.clear()
-
 
 
 def mostrardados():
@@ -168,32 +237,21 @@ def gerarpdf():
     merger.append('C:/Users/ccifusp/Desktop/Teste da galera/dadosLAB.pdf')
     merger.write('C:/Users/ccifusp/Desktop/Teste da galera/dadosLABFINAL.pdf')
     print("Table in PDF created successfully")
-  
-def grafico_dinamico(angulo,voltagem):
 
-    return
 
 
 
 
     
     
-            
-janela = Tk()
-janela.geometry("700x400")
-janela.title('LABDIDER')
-texto = Label(janela,text ='Seja Bem-vindo ao Software Labdider', font = "Times 30")
-texto.grid(column =0, row = 0,padx=20 , pady=0)
-botao = Button(janela, text = 'Gerar Gráfico' , font = 'Arial 15', command = grafico_dinamico)
-botao.grid(column = 0, row = 10,padx=20 , pady=0)
-botao = Button(janela, text = 'Gerar PDF ' , font = 'Arial 15', command = gerarpdf)
-botao.grid(column = 0, row = 11,padx=20 , pady=0)
-botao = Button(janela, text = 'Salvar dados' , font = 'Arial 15', command = salvar_txt)
-botao.grid(column = 0, row = 12,padx=20 , pady=0)
-botao = Button(janela, text = 'Mostrar dados' , font = 'Arial 15', command = mostrardados)
-botao.grid(column = 0, row = 13,padx=20 , pady=0)
+def abrir_primeira_janela():
+    janela1.geometry("700x400")
+    janela1.title('LABDIDER')
+    texto = Label(janela1,text ='Seja Bem-vindo ao Software Labdider', font = "Times 30")
+    texto.pack(padx=20 , pady=0)
+    botao = Button(janela1, text = 'Iniciar experimento' , font = 'Arial 15', command = iniciar_experimento)
+    botao.pack(padx=20 , pady=0)
+    #canvas = FigureCanvasTkAgg(fig, master=janela)
+    janela1.mainloop()
 
-botao = Button(janela, text = 'Iniciar experimento' , font = 'Arial 15', command = iniciar_experimento)
-botao.grid(column = 0, row = 13,padx=20 , pady=0)
-
-janela.mainloop()
+abrir_primeira_janela()
