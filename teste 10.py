@@ -3,6 +3,9 @@ import numpy as np
 import time
 import serial  # importacao do modulo serial
 import random
+from datetime import datetime
+from tkinter import *
+import tkinter.messagebox
 
 def grafico_dinamico():
     leitura = []
@@ -57,42 +60,16 @@ def grafico_dinamico():
     ser.close()
 
 def main():
-    #fig, ax = plt.subplots()
-    #fig2, ax2 = plt.subplots()
-    #fig.set_visible(False)
-    #fig.set_facecolor('red')
-    #fig2.set_facecolor('blue')
-    #ax.plot(2,3)
-    #ax2.plot(4,5)
-    #ax.set_autoscale_on(True)
-    #plt.ion()
-    #plt.show()
-    import numpy as np
-    import matplotlib.pyplot as plt
-    from matplotlib.widgets import Button
 
-    dataX = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    dataY = np.array([1193, 1225, 1125, 1644, 1255, 13676, 2007, 2008, 12359, 1210])
+    root = tkinter.Tk()
+    root.title("When you press a button the message will pop up")
+    root.geometry('500x300')
 
-    ax = plt.subplot(111)
+    def onClick():
+        tkinter.messagebox.showinfo("Welcome to GFG.", "Hi I'm your message")
 
-    def on_click(event):
-        if event.dblclick:
-            ax.plot((event.xdata, event.xdata), (mean - standardDeviation, mean + standardDeviation), 'r-')
-            plt.show()
+    button = Button(root, text="Click Me", command=onClick, height=5, width=10)
+    button.pack(side='bottom')
+    root.mainloop()
 
-    def _yes(event):
-        print("yolo")
-
-    mean = np.mean(dataY)
-    standardDeviation = np.std(dataY)
-
-    ax.plot(dataX, dataY, linewidth=0.5)
-    plt.connect('button_press_event', on_click)
-
-    axcut = plt.axes([0.9, 0.0, 0.1, 0.075])
-    bcut = Button(axcut, 'YES', color='red', hovercolor='green')
-    bcut.on_clicked(_yes)
-
-    plt.show()
 main()
