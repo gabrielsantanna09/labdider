@@ -84,10 +84,13 @@ def salva_grafico():
 def reiniciar():
     global ser
     global janela1
+    global destr
+
 
     #O serial é fechado aqui para que não haja problema quando for se reconectar com a porta nas proximas vezes
     ser.close()
     janela1 = Tk()
+    destr = Tk()
     abrir_primeira_janela()
     #quando tento reiniciar o experimento dá problema porque da acesso negado na porta COM5
     #Não sei porque isso acontece
@@ -144,6 +147,7 @@ def Parar_Experimento():
 #As vezes, ao iniciar o experimento obtemos um erro (UTF-8 algo assim, precisamos ver como resolver isso, provavelmente colocar uma validação no erro
 #Outra coisa que queremos aqui é fazer os janelas (gráfico e botão parar apareçam em locais melhores da tela
 #A janela com o botão fica atrás do gráfico e talvez o usuário nem veja
+#utf-8' codec can't decode byte 0xfc in position 0: invalid start byte
 def iniciar_experimento():
 
     janela1.destroy()
@@ -151,6 +155,12 @@ def iniciar_experimento():
     #janelinha para consertar botão
     global destr
     destr = Tk()
+
+    destr.geometry("400x100+800+200")
+    destr.title('LABDIDER')
+    texto = Label(destr, text='Clique no botão para encerrar experimento', font="Times 15")
+
+    texto.pack(padx=10)
     bot = Button(destr, text='Parar Experimento', font='Arial 15', command=Parar_Experimento)
     bot.pack(padx=20, pady=0)
 
@@ -317,7 +327,8 @@ def abrir_primeira_janela():
     global destr
 
     janela2.destroy()
-    destr.destroy()
+    if destr.state() == 'normal':
+        destr.destroy()
     janela1.geometry("700x400")
     janela1.title('LABDIDER')
     texto = Label(janela1,text ='Seja Bem-vindo ao Software Labdider', font = "Times 30")
