@@ -22,6 +22,7 @@ from tkinter import ttk
 from datetime import datetime
 import os.path
 import tkinter.messagebox
+from tkinter import messagebox
 
 janela1 = Tk()
 janela2 = Tk()
@@ -139,7 +140,15 @@ def Parar_Experimento():
     canvas = FigureCanvasTkAgg(fig2, master=janela2)
     canvas.draw()
     canvas.get_tk_widget().pack()
+    janela2.protocol("WM_DELETE_WINDOW", pergunta)
     janela2.mainloop()
+
+def pergunta():
+    resposta = messagebox.askyesno("Cuidado", "Se você sair os dados do experimento atual podem ser perdidos, deseja continuar?")
+    if resposta:
+        encerrar()
+    else:
+        return
 
 #É a função que vai fazer o gráfico dinâmico aparecer
 #precisamos dar um jeito no botão que as vezes simplesmente para de funcionar
@@ -198,10 +207,18 @@ def iniciar_experimento():
 
     #iniciando o loop que vai coletar os dados do arduíno
     while w == True:
-        print(w)
         while (ser.inWaiting() == 0):
             pass
         b = ser.readline()
+        j = False
+        while j == False:
+            try:
+                string_n = b.decode()
+                j = True
+            except UnicodeDecodeError as e:
+                messagebox.showinfo("Erro", f"Ocorreu o erro {e}, por favor tente novamente iniciar o experimento")
+                return
+
         string_n = b.decode()
         string = string_n.rstrip()
         flt = float(string)
@@ -215,7 +232,6 @@ def iniciar_experimento():
             j = dados[contador] + (i * 180)
             angulo.append(j)
             if contador >= 4:
-                print(int(angulo[-1]))
                 if (int(angulo[-1]) == i * 180):
                     i = i + 1
                     angulo[-1] = i*180
@@ -282,6 +298,9 @@ def mostrardados():
     my_game.pack()
     ws.mainloop()
 
+def encerrar():
+    exit()
+
 #Ainda será trabalhada
 def gerarpdf():
     j= 0
@@ -335,6 +354,7 @@ def abrir_primeira_janela():
     texto.pack(padx=20 , pady=0)
     botao = Button(janela1, text = 'Iniciar experimento' , font = 'Arial 15', command = iniciar_experimento)
     botao.pack(padx=20 , pady=0)
+    janela1.protocol("WM_DELETE_WINDOW", encerrar)
     janela1.mainloop()
 
 abrir_primeira_janela()
