@@ -1,0 +1,26 @@
+Os dados das linhas ímpares são ângulos e das linhas pares são voltagens:
+0.0
+0.01
+4.92
+0.01
+9.84
+0.03
+14.77
+0.03
+19.69
+0.02
+Desse jeito talvez seja melhor de salvar: 
+
+Ângulos:
+0.0
+4.92
+9.84
+14.77
+19.69
+
+Voltagens:
+ 0.01
+0.01
+0.03
+0.03
+0.02

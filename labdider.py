@@ -40,7 +40,7 @@ def salvar_dados():
     data = datetime.now()
     hoje = str(data.year) + "_" + str(data.month) + "_" + str(data.day)
     hora = str(data.hour) + "." + str(data.minute) + "."+str(data.second)
-    caminho = "C:/Users/ccifusp/git/Labdider/dados_salvos/"+hoje
+    caminho = "dados_salvos/"+hoje
     if os.path.exists(caminho) == False:
         os.makedirs(caminho)
     caminho = caminho +"/"+hora+".txt"
@@ -73,7 +73,7 @@ def salva_grafico():
     data = datetime.now()
     hoje = str(data.year) + "_" + str(data.month) + "_" + str(data.day)
     hora = str(data.hour) + "." + str(data.minute) + "." + str(data.second)
-    caminho = "C:/Users/ccifusp/git/Labdider/dados_salvos/" + hoje
+    caminho = "dados_salvos/" + hoje
     if os.path.exists(caminho) == False:
         os.makedirs(caminho)
     caminho = caminho + "/" + hora + ".png"
@@ -99,7 +99,6 @@ def reiniciar():
 #Função que faz aparecer a janela quando o gráfico dinâmico for fechado
 def Parar_Experimento():
     #aqui queremos abrir uma nova janela
-    print("Hellor world")
     global w
     global angulo
     global voltagem
@@ -117,7 +116,6 @@ def Parar_Experimento():
         angulo.pop(-1)
 
     fig2, ax2 = plt.subplots()
-    print(angulo,voltagem)
     ax2.scatter(angulo,voltagem)
     ax.set_autoscale_on(True)
 
@@ -300,43 +298,6 @@ def mostrardados():
 
 def encerrar():
     exit()
-
-#Ainda será trabalhada
-def gerarpdf():
-    j= 0
-    #Fazendo um PDF para a imagem
-    pdf2 = canvas.Canvas("C:/Users/ccifusp/Desktop/Teste da galera/dadosLAB.pdf", pagesize=A4)
-    dados = mostrardados()
-    pdf2.drawImage('C:/Users/ccifusp/Desktop/Teste da galera/grafico.png', 0 ,150, width=600, height=1000)
-    pdf2.save()
-    # Instantiate a new PDF document
-    pdfFile = pdf.Document()
-    # Create a page in the PDF file
-    newPage = pdfFile.pages.add()
-    # Create a table
-    table = pdf.Table()
-    # Set border width 
-    table.default_cell_border =  pdf.BorderInfo(pdf.BorderSide.ALL, 1.0, pdf.Color.black)
-    row = table.rows.add()
-    row.cells.add('Num.dado')
-    row.cells.add('ANGULO(°)')
-    row.cells.add('VOLTAGEM(V)')
-    for a,v in zip(dados[0],dados[1]) :
-        j = j+1
-        row2 = table.rows.add()
-    # Add table cells
-        row2.cells.add(f"{j}")
-        row2.cells.add(f"{a}")
-        row2.cells.add( f"{v}")
-    # Add table to the target page
-    newPage.paragraphs.add(table)
-    # Save the PDF on the disk
-    pdfFile.save("C:/Users/ccifusp/Desktop/Teste da galera/dadosLAB2.pdf")
-    merger = PyPDF2.PdfMerger()
-    merger.append('C:/Users/ccifusp/Desktop/Teste da galera/dadosLAB2.pdf')
-    merger.append('C:/Users/ccifusp/Desktop/Teste da galera/dadosLAB.pdf')
-    merger.write('C:/Users/ccifusp/Desktop/Teste da galera/dadosLABFINAL.pdf')
-    print("Table in PDF created successfully")
 
 #Função que abre a primeira janela e basicamente é o início do experimento
 #Aqui as variáveis precisam ser zeradas porque o experimento pode ser refeito gerando novos dados
